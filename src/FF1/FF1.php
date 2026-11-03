@@ -67,18 +67,12 @@ class FF1 implements CodecInterface
      * Основной метод расшифровки
      * 
      * @param string $x Зашифрованная строка
-     * @return string|int Возвращает исходное значение
+     * @return string Возвращает исходное значение
      */
 
     public function decrypt(string $x): string
     {
         return $this->decryptionRoundsFeistel($x);
-    }
-
-    private function validateDecryptionStroke(string $x): string|int
-    {
-
-        return preg_match('/^\d+$/', $x) ? intval($x) : $x;
     }
 
     /**
