@@ -70,7 +70,7 @@ class FF1 implements CodecInterface
      * @return string|int Возвращает исходное значение
      */
 
-    public function decrypt(string $x): string|int
+    public function decrypt(string $x): string
     {
         return $this->decryptionRoundsFeistel($x);
     }

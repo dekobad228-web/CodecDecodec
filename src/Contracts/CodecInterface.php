@@ -14,7 +14,7 @@ interface CodecInterface
     /**
      * Метод дешифрования
      * 
-     * @param string|int $x Входное значение для дешифрования
+     * @param string $x Входное значение для дешифрования
      */
-    public function decrypt(string $x): string|int;
+    public function decrypt(string $x): string;
 }
