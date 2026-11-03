@@ -1,0 +1,30 @@
+{
+    "name": "deko/codec-decodec",
+    "description": "Library of symmetric encryption algorithms",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "CodecDecodec\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "deko",
+            "email": "deko.bad228@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^8.1",
+        "ext-openssl": "*"
+    },
+    "require-dev": {
+        "phpbench/phpbench": "^1.7",
+        "phpunit/phpunit": "^12.5"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "benchmark": "phpbench run benchmark --report=default --php-config='{\"opcache.enable_cli\": true}'"
+    }
+}
