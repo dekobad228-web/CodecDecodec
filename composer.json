@@ -1,8 +1,21 @@
 {
     "name": "deko/codec-decodec",
-    "description": "Library of symmetric encryption algorithms",
+    "description": "Library of symmetric encryption algorithms with format-preserving encryption (FPE)",
     "type": "library",
     "license": "MIT",
+    "keywords": [
+        "encryption",
+        "ff1",
+        "format-preserving-encryption",
+        "fpe",
+        "aes",
+        "nist"
+    ],
+    "homepage": "https://github.com/dekobad228-web/CodecDecodec",
+    "support": {
+        "issues": "https://github.com/dekobad228-web/CodecDecodec/issues",
+        "source": "https://github.com/dekobad228-web/CodecDecodec"
+    },
     "autoload": {
         "psr-4": {
             "CodecDecodec\\": "src/"
@@ -21,7 +34,7 @@
     },
     "require-dev": {
         "phpbench/phpbench": "^1.7",
-        "phpunit/phpunit": "^12.5"
+        "phpunit/phpunit": "^10.5 || ^11.0 || ^12.0"
     },
     "scripts": {
         "test": "phpunit",
