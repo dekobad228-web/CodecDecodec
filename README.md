@@ -51,6 +51,7 @@ $ff1 = $codec->create('ff1', [
 $encrypted = $ff1->encrypt('123456789012');
 $decrypted = $ff1->decrypt($encrypted);
 ```
+### Второй вариант шифрования
 
 ```php
 use CodecDecodec\CodecDecodec;
