@@ -6,6 +6,7 @@ namespace CodecDecodec\FF1;
 
 use CodecDecodec\Contracts\CodecInterface;
 use CodecDecodec\FF1\Enums\{Aes, Radix};
+use InvalidArgumentException;
 
 class FF1 implements CodecInterface
 {
@@ -18,10 +19,6 @@ class FF1 implements CodecInterface
      */
     private Radix $radix;
     /**
-     * @var int $length Максимальная длина шифруемого значения
-     */
-    private int $length;
-    /**
      * @var string $key Секретный ключ
      */
     private string $key;
@@ -29,6 +26,10 @@ class FF1 implements CodecInterface
      * @var string $tweak Дополнительный контекст
      */
     private string $tweak;
+    /**
+     * @var int $length Максимальная длина шифруемого значения
+     */
+    private int $length;
 
     /**
      * @param string $key Секретный ключ
@@ -44,11 +45,23 @@ class FF1 implements CodecInterface
         Radix $radix,
         int $length,
     ) {
+        if ($aes->lengthKey() !== strlen($key)) {
+            throw new InvalidArgumentException("Для {$aes->value} ключ должен быть {$aes->lengthKey()} байт");
+        }
+
+        if ($radix->value ** $length < 1_000_000) {
+            throw new InvalidArgumentException("Длина {$length} при radix {$radix->value} даёт слишком мало значений");
+        }
+
+        if (($length - intdiv($length, 2)) * log((float) $radix->value, 2) > 55) {
+            throw new InvalidArgumentException("Слишком большая длина {$length} для radix {$radix->value}");
+        }
+
+        $this->key = $key;
+        $this->tweak = $tweak;
         $this->aes = $aes;
         $this->radix = $radix;
         $this->length = $length;
-        $this->key = $key;
-        $this->tweak = $tweak;
     }
 
     /**
@@ -60,7 +73,7 @@ class FF1 implements CodecInterface
 
     public function encrypt(string|int $x): string
     {
-        return $this->encryptionRoundsFeistel($this->maxLength(strval($x)));
+        return $this->encryptionRoundsFeistel($this->maxLength($this->validateInput(strval($x))));
     }
 
     /**
@@ -72,7 +85,7 @@ class FF1 implements CodecInterface
 
     public function decrypt(string $x): string
     {
-        return $this->decryptionRoundsFeistel($x);
+        return $this->decryptionRoundsFeistel($this->validateCiphertext($x));
     }
 
     /**
@@ -128,17 +141,6 @@ class FF1 implements CodecInterface
     }
 
     /**
-     * Проверяет, состоит ли строка исключительно из символов 0 и 1.
-     *
-     * @param string $string Проверяемая строка.
-     * @return bool Возвращёт true в случае успеха
-     */
-    protected function isBitString(string $string): bool
-    {
-        return preg_match("/^[01]+$/", $string) === 1;
-    }
-
-    /**
      * Максимальная длина шифра
      * 
      * @param string $x Исходная строка
@@ -146,7 +148,7 @@ class FF1 implements CodecInterface
      */
     private function maxLength(string $x): string
     {
-        return str_pad($x, $this->length, "0", STR_PAD_LEFT);
+        return str_pad($x, $this->length, $this->radix->alphabet()[0], STR_PAD_LEFT);
     }
 
 
@@ -341,7 +343,7 @@ class FF1 implements CodecInterface
      * @param string $x Шифртекст
      * @return string Возвращет исходное значение в виде строки с добавленными до максимальной длины нулями
      */
-    public function decryptionRoundsFeistel(string $x): string
+    private function decryptionRoundsFeistel(string $x): string
     {
         [$n, $lengthA, $lengthB] = $this->stringLength($x);
 
@@ -367,5 +369,50 @@ class FF1 implements CodecInterface
         }
 
         return $this->STRm_radix($lengthA, $numA) . $this->STRm_radix($lengthB, $numB);
+    }
+
+    /**
+     * Валидация входного значения
+     * 
+     * @param string $x Входная строка
+     * @return string $x Возвращает строку без изменений в случае удачной проверки
+     */
+    private function validateInput(string $x): string
+    {
+        $n = strlen($x);
+
+        if ($n === 0) {
+            throw new InvalidArgumentException('Значение не может быть пустым');
+        }
+
+        if ($n > $this->length) {
+            throw new InvalidArgumentException("Недопустимая длина значения: {$n}, ожидается не больше {$this->length}");
+        }
+
+        if (strspn($x, $this->radix->alphabet()) !== $n) {
+            throw new InvalidArgumentException('Значение содержит символы вне алфавита');
+        }
+        return $x;
+    }
+
+    /**
+     * Валидация зашифрованной строки
+     * 
+     * @param string $x Зашифрованная строка
+     * @return string $x Возвращает строку без изменений в случае удачной проверки
+     */
+    private function validateCiphertext(string $x): string
+    {
+        $n = strlen($x);
+
+        if ($n !== $this->length) {
+            throw new InvalidArgumentException("Длина шифртекста должна быть {$this->length}, получено {$n}");
+        }
+
+        if (strspn($x, $this->radix->alphabet()) !== $n) {
+            throw new InvalidArgumentException('Шифртекст содержит символы вне алфавита');
+        }
+
+        return $x;
     }
 }

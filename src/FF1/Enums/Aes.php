@@ -7,4 +7,13 @@ enum Aes: string
     case AES_128_CBC = 'aes-128-cbc';
     case AES_192_CBC = 'aes-192-cbc';
     case AES_256_CBC = 'aes-256-cbc';
+
+    public function lengthKey(): int
+    {
+        return match ($this) {
+            self::AES_128_CBC => 16,
+            self::AES_192_CBC => 24,
+            self::AES_256_CBC => 32
+        };
+    }
 }
